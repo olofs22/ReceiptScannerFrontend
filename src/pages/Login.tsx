@@ -16,7 +16,8 @@ function Login(){
             });
             localStorage.setItem('token', res.data.token);
             navigate('/receipts');
-        } catch {
+        } catch (err){
+            console.error(err);
             setError('Invalid email or password');
         }
     };

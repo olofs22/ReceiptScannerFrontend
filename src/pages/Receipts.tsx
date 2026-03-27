@@ -12,7 +12,9 @@ function Receipts() {
         {title: '', price: 0, quantity: 1}
     ]);
     const navigate = useNavigate();
-
+    const [checkedItems, setCheckedItems] = useState<{[key: number]: boolean}>({});
+    const [scanning, setScanning] = useState(false);
+    
     useEffect(() =>{
         loadReceipts();
     }, []);
@@ -64,6 +66,59 @@ function Receipts() {
         localStorage.removeItem('token');
         navigate('/login');
     };
+
+    const toggleItem = (id: number) => {
+        setCheckedItems(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
+
+    const calculateTotal = (items: Receipt['items']) => {
+        return items
+            .filter(i => checkedItems[i.id])
+            .reduce((sum, i) => sum + i.price * i.quantity, 0)
+            .toFixed(2);
+    };
+
+    const scanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if(!file) return;
+
+        setScanning(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://192.168.1.185:5005/api/receipt/scan', {
+                method: 'POST',
+                headers: {authorization: `Bearer ${token}`},
+                body: formData
+            });
+
+            console.log('Status:', res.status);
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.log('Error response:', text);
+                throw new Error(text);
+            }
+
+            
+            const data = await res.json();
+            setStoreName(data.storeName || '');
+            setDate(data.date || '');
+            setItems(data.items || []);
+            setShowForm(true);
+        } catch (err) {
+            console.error('Failed to scan receipt', err);
+            alert('Scan failed: ' + err);
+        } finally {
+            setScanning(false);
+        } 
+    };
+
     return (
         <div>
             <div>
@@ -74,6 +129,26 @@ function Receipts() {
             <button onClick={() => setShowForm(!showForm)}>
                 {showForm ? 'Cancel' : '+ New Receipt'}
             </button>
+            <button onClick={() => setShowForm(!showForm)}>
+                {showForm ? 'cancel' : '+ New Receipt'}
+            </button>
+            <label style ={{ cursor : 'pointer'}}>
+                <input type="file"
+                accept="image/*"
+                capture="environment"
+                style={{display: 'none'}}
+                onChange={scanReceipt}
+                />
+                <span style={{
+                    padding: '8px 16px',
+                    background: '#0066cc',
+                    color: 'white',
+                    borderRadius: '4px',
+                    marginLeft: '8px'
+                }}>
+                    {scanning ? 'Scanning...' : '📷 Scan Receipt'}
+                </span>
+            </label>
 
             {showForm && (
                 <div>
@@ -112,12 +187,22 @@ function Receipts() {
             )}
             {receipts.map(r => (
                 <div key={r.id}>
-                    <h3>{storeName || 'Unknown store'} - {r.date.split('T')[0]}</h3>
-                    <ul>
+                    <h3>{r.storeName || 'Unknown store'} - {r.date.split('T')[0]}</h3>
+                    <ul style={{ listStyle: 'none', padding: 0}}>
                         {r.items.map(i => (
-                            <li key={i.id}>{i.title} x{i.quantity} - {i.price} SEK</li>
+                            <li key={i.id}>
+                                <label> 
+                                    <input 
+                                    type="checkbox"
+                                    checked={!!checkedItems[i.id]}
+                                    onChange={() => toggleItem(i.id)}
+                                    />
+                                    {''} {i.title} x{i.quantity} - {i.price} SEK
+                                </label>
+                            </li>
                         ))}
                     </ul>
+                    <p><strong>Total: {calculateTotal(r.items)}SEK</strong></p>
                     <button onClick={() => deleteReceipt(r.id)}>Delete</button>
                 </div>
             ))}
