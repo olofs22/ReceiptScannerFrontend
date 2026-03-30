@@ -119,6 +119,27 @@ function Receipts() {
         } 
     };
 
+    const openSwish = (total: number) => {
+    const data = {
+        version: 1,
+        payee: {
+            value: "",  // ← recipient phone number goes here
+            editable: true
+        },
+        amount: {
+            value: Math.round(total * 100) / 100,
+            editable: true
+        },
+        message: {
+            value: "Receipt split",
+            editable: true
+        }
+    };
+
+    const url = `swish://payment?data=${JSON.stringify(data)}`;
+    window.location.href = url;
+};
+
     return (
         <div>
             <div>
@@ -203,6 +224,11 @@ function Receipts() {
                         ))}
                     </ul>
                     <p><strong>Total: {calculateTotal(r.items)}SEK</strong></p>
+                    <button 
+                        onClick={() => openSwish(parseFloat(calculateTotal(r.items)))}
+                        style={{ background: '#5a2d82', color: 'white', marginRight: '8px' }}>
+                        💜 Swish {calculateTotal(r.items)} SEK
+                    </button>
                     <button onClick={() => deleteReceipt(r.id)}>Delete</button>
                 </div>
             ))}
