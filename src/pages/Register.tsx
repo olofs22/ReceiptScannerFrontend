@@ -30,24 +30,63 @@ function Register() {
         }
     };
     return (
-        <div>
-            <h1>Register</h1>
-            {message && <p>{message}</p>}
-            <input type='email'
-            placeholder='Email'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            />
-            <small>Min 8 characters, one uppercase, one number</small>
-            <input type='password'
-            placeholder='Password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            />
-            <button onClick={handleRegister}>Register</button>
-            <p>Already have an account? <Link to="/login">Login</Link></p>
+    <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '32px 24px'
+    }}>
+        <div style={{ marginBottom: '40px' }}>
+            <h1 style={{
+                fontFamily: 'Syne, sans-serif',
+                fontSize: '48px',
+                fontWeight: '800',
+                lineHeight: 1
+            }}>kvitt</h1>
+            <p style={{ color: 'var(--grey-mid)', marginTop: '8px', fontSize: '15px' }}>
+                create account
+            </p>
         </div>
-    );
+
+        {message && (
+            <div style={{
+                background: message.includes('Registered') ? 'var(--green-light)' : '#fff0f0',
+                border: `1px solid ${message.includes('Registered') ? 'var(--green)' : '#ffcccc'}`,
+                borderRadius: 'var(--radius-sm)',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                color: message.includes('Registered') ? 'var(--green-dark)' : '#cc0000',
+                fontSize: '14px'
+            }}>{message}</div>
+        )}
+
+        <input type="email" placeholder="Email" value={email}
+            onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={password}
+            onChange={(e) => setPassword(e.target.value)} />
+        <small style={{ color: 'var(--grey-mid)', fontSize: '12px', marginTop: '-8px', marginBottom: '16px', display: 'block' }}>
+            Min 8 characters, one uppercase, one number
+        </small>
+
+        <button onClick={handleRegister} style={{
+            width: '100%',
+            background: 'var(--green)',
+            color: 'var(--white)',
+            padding: '16px',
+            borderRadius: 'var(--radius)',
+            fontSize: '16px',
+            marginTop: '8px'
+        }}>Register</button>
+
+        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--grey-mid)', fontSize: '14px' }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--green)', fontWeight: '600', textDecoration: 'none' }}>
+                Login
+            </Link>
+        </p>
+    </div>
+);
 }
 
 export default Register;
